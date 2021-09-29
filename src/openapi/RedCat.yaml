@@ -1,0 +1,71 @@
+---
+openapi: 3.0.2
+info:
+  title: RedCat
+  version: 1.0.0
+  description: Cat Breeds
+paths:
+  /cats:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Cat'
+              examples:
+                Cat Breeds:
+                  value:
+                  - id: "1"
+                    name: Abyssinian
+                    description: domestic short-haired cat
+                  - id: "2"
+                    name: American Bobtail Cat Breed
+                    description: domestic cat
+          description: valid Response
+      operationId: getCats
+    post:
+      requestBody:
+        description: Post Method
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cat'
+            examples:
+              Cat:
+                value:
+                  id: "3"
+                  name: Birman Cat Breed
+                  description: "A Birman cat is semi-longhaired with darker colouring\
+                    \ to the points, face, legs, ears and tail, and a pale toning\
+                    \ body colour"
+        required: true
+      responses:
+        "201":
+          description: Created description
+      operationId: addCats
+components:
+  schemas:
+    Cat:
+      title: Root Type for Cat
+      description: Cat breed
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+      example:
+        id: "1"
+        name: Abyssinian
+        description: domestic short-haired cat
+  securitySchemes:
+    api-key:
+      type: apiKey
+      description: '3scale API Key '
+      name: api-key
+      in: header
