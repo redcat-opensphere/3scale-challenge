@@ -15,13 +15,13 @@ const cats = [
 ];
 
 router.get('/', function(req, res) {
-  res.status(200).send(items);
+  res.status(200).send(cats);
 });
 
 router.post('/', function(req, res) {
-    const item = req.body;
-    if (item) {
-        items.push(item);
+    const cat = req.body;
+    if (cat) {
+        cats.push(cat);
         res.status(201).send();
     } else {
         res.status(400).send({ error: "Invalid request"});
