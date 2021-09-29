@@ -21,7 +21,7 @@ node() {
                        secretName: params.SECRET_NAME],
             service: [:],
             applications: [
-                [ name: "my-test-app", description: "This is used for tests", plan: "test", account: 14 ]
+                [ name: "my-test-app", description: "This is used for tests", plan: "test", account: "user5" ]
             ],
             applicationPlans: [
               [ systemName: "test", name: "Test", defaultPlan: true, published: true ],
