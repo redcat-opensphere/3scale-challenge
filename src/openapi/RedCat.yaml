@@ -64,11 +64,12 @@ components:
         name: Abyssinian
         description: domestic short-haired cat
   securitySchemes:
-    api-key:
-      type: apiKey
-      description: '3scale API Key '
-      name: api-key
-      in: header
+    Oauth2:
+      flows:
+        authorizationCode:
+          authorizationUrl: http://sso-rh-sso.apps.cluster-gbsmc.gbsmc.sandbox13.opentlc.com/auth/realms/user5/protocol/openid-connect/auth
+          tokenUrl: http://sso-rh-sso.apps.cluster-gbsmc.gbsmc.sandbox13.opentlc.com/auth/realms/user5/protocol/openid-connect/token
+          refreshUrl: http://cats-app-user5.apps.cluster-gbsmc.gbsmc.sandbox13.opentlc.com
+      type: oauth2
 security:
-    -
-        api-key: []
+- Oauth2: []

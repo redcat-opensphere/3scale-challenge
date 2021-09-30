@@ -8,12 +8,13 @@ node() {
     stage("checkout") {
         checkout scm
     }
-    
     stage("Prepare") {
         service = toolbox.prepareThreescaleService(
-            openapi: [filename: params.PARAMS_OPENAPI_SPEC],
+            openapi: [filename: params.PARAMS_OPENAPI_SPEC,
+                      securityScheme: 'OIDC'],
             environment: [ baseSystemName: params.APP_NAME,
-    					   privateBaseUrl: params.PRIVATE_URL],
+                           privateBaseUrl: params.PRIVATE_URL,
+                           oidcIssuerEndpoint: params.OID_ISSUER],
             toolbox: [ openshiftProject: params.OCP_PROJECT,
                        destination: params.INSTANCE,
                        insecure: "yes",
@@ -49,15 +50,33 @@ node() {
         // To run the integration tests when using APIcast SaaS instances, we need
         // to fetch the proxy definition to extract the staging public url
         def proxy = service.readProxy("sandbox")
-        def userkey = service.applications[0].userkey
+        def client_id = params.ClIENT_ID
+        def client_secret = params.CLIENT_SECRET
         sh """set -e
+        echo "client_id is ${client_id}"
+        echo "client_secret is ${client_secret}"
+        output=`curl -X POST -d "client_id=${client_id}&client_secret=${client_secret}&grant_type=client_credentials" http://sso-rh-sso.apps.cluster-gbsmc.gbsmc.sandbox13.opentlc.com/auth/realms/user5/protocol/openid-connect/token`
+        token=`jq -r '.access_token' <<< "\$output"`
         echo "Public Staging Base URL is ${proxy.sandbox_endpoint}"
-        echo "userkey is ${userkey}"
-        curl -sfk -w "Get Cats: %{http_code}\n" -o /dev/null ${proxy.sandbox_endpoint}${TEST_ENDPOINT} -H 'api-key: ${userkey}'
+        echo "client_id is ${client_id}"
+        curl -sfk -w "Get Cats: %{http_code}\n" -o /dev/null ${proxy.sandbox_endpoint}${TEST_ENDPOINT} -H "Authorization: Bearer \$token"
         """
     }
     
     stage("Promote to production") {
         service.promoteToProduction()
+    }
+    stage ("Deploy App") {
+        openshift.withCluster() {
+            openshift.withProject(params.OCP_PROJECT) {
+                echo "Using project: ${openshift.project()}"
+                openshift.selector("bc", params.APP_NAME).startBuild()
+                timeout(5) {
+                    openshift.selector("bc", params.APP_NAME).related('Builds').untilEach(1) {
+                        return (it.object().status.phase == "Complete")
+                    }
+                }
+            }
+        }
     }
 }
