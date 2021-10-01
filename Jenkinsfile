@@ -50,11 +50,9 @@ node() {
         // To run the integration tests when using APIcast SaaS instances, we need
         // to fetch the proxy definition to extract the staging public url
         def proxy = service.readProxy("sandbox")
-        def client_id = params.ClIENT_ID
+        def client_id = params.CLIENT_ID
         def client_secret = params.CLIENT_SECRET
         sh """set -e
-        echo "client_id is ${client_id}"
-        echo "client_secret is ${client_secret}"
         output=`curl -X POST -d "client_id=${client_id}&client_secret=${client_secret}&grant_type=client_credentials" http://sso-rh-sso.apps.cluster-gbsmc.gbsmc.sandbox13.opentlc.com/auth/realms/user5/protocol/openid-connect/token`
         token=`jq -r '.access_token' <<< "\$output"`
         echo "Public Staging Base URL is ${proxy.sandbox_endpoint}"
